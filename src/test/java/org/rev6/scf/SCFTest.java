@@ -9,20 +9,20 @@ import java.io.File;
 public class SCFTest {
 
     //Fill in the blanks here
-    private static final String HOST = "";
-    private static final String USER = "";
-    private static final String PASSWORD = "";
-    private static final String PK_FILE_PATH = "";
-    private static final String LOCAL_PATH = "";
-    private static final String REMOTE_PATH = "";
+    private static final String HOST = "10.211.55.18";
+    private static final String USER = "oracle";
+    private static final String PASSWORD = "Salvation";
+    private static final String PK_FILE_PATH = "/Users/gakins/.ssh/id_dsa";
+    private static final String LOCAL_PATH = "test.txt";
+    private static final String REMOTE_PATH = "/u01/reports";
 
 
     public static void main(String[] args) throws Exception {
 
-        /*SshConnection sshConnection = new SshConnection(
-                HOST, USER, PASSWORD); */ //Uses Password
         SshConnection sshConnection = new SshConnection(
-                HOST, USER, new File(PK_FILE_PATH)); //Uses Private Key
+                HOST, USER, PASSWORD);
+//        SshConnection sshConnection = new SshConnection(
+//                HOST, USER, new File(PK_FILE_PATH)); //Uses Private Key
 
         sshConnection.connect();
 
