@@ -1,12 +1,14 @@
 package org.rev6.scf;
 
 import java.io.File;
+import java.io.OutputStream;
 
 public class ScpFile {
-    private final File localFile;
-    private final String remoteDirectory;
-    private final String remoteFilename;
-
+    private File localFile = null;
+    private String remoteDirectory;
+    private String remoteFilename;
+    private OutputStream outputStream ;
+    
     public ScpFile(final File localFile, final String remotePath) {
         if (localFile == null || remotePath == null) {
             throw new IllegalArgumentException("File reference and path must " +
@@ -15,7 +17,25 @@ public class ScpFile {
 
         this.localFile = localFile;
 
-        if (remotePath.contains("/")) {
+        init(remotePath);
+    }
+    protected ScpFile() {
+    	
+    }
+    public ScpFile(final File file) {
+        this(file, file.getName());
+    }
+    
+
+    public OutputStream getOutputStream() {
+    	return this.outputStream;
+    }
+    public void setOutputStream(OutputStream outputStream) {
+    	this.outputStream = outputStream;
+    }
+    
+    protected void init(String remotePath) {
+    	if (remotePath.contains("/")) {
             int lastSlashIndex = remotePath.lastIndexOf("/");
             this.remoteDirectory = remotePath.substring(0,lastSlashIndex + 1);
             String filename = remotePath.substring(lastSlashIndex + 1);
@@ -32,11 +52,7 @@ public class ScpFile {
         }
     }
 
-    public ScpFile(final File file) {
-        this(file, file.getName());
-    }
-
-    File getLocalFile() {
+	File getLocalFile() {
         return this.localFile;
     }
 

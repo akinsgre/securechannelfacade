@@ -1,5 +1,6 @@
 package org.rev6.scf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +29,12 @@ public class ScpDownload extends SshTask {
         this.scpFile = scpFile;
     }
 
-    @Override
+
+	@Override
     void execute(Session sshSession) throws SshException {
         InputStream in = null;
         OutputStream out = null;
-        FileOutputStream fos = null;
+        OutputStream outStream = null;
         ChannelExec channel = null;
         try {
             try {
@@ -40,7 +42,15 @@ public class ScpDownload extends SshTask {
                 String cmd = SCP_DOWNLOAD_COMMAND + this.scpFile.getRemoteFullPath();
 
                 channel = setUpChannel(sshSession, cmd);
-                fos = new FileOutputStream(scpFile.getLocalFile());
+                //TODO.. this is where I think the refactoring should come in.. 
+                //  Maybe ScpOutputStream should extend ScpDownload adn this method Overriden accordingly?
+                //  Maybe the following should be encapsulated in the ScpFile, instead of place here?
+                if (scpFile.getLocalFile() == null) {
+                	outStream = new ByteArrayOutputStream();	
+                } else {
+                	outStream = new FileOutputStream(scpFile.getLocalFile());	
+                }
+                
                 in = channel.getInputStream();
                 out = channel.getOutputStream();
 
@@ -53,14 +63,14 @@ public class ScpDownload extends SshTask {
 
                 sendAck(out);
 
-                writePayloadToFile(in, out, fos, fileSize);
+                writePayloadToFile(in, out, outStream, fileSize);
             } finally {
                 if (out != null)
                     out.close();
                 if (in != null)
                     in.close();
-                if (fos != null)
-                    fos.close();
+                if (outStream != null)
+                    outStream.close();
                 if (channel != null)
                     channel.disconnect();
             }
@@ -100,7 +110,7 @@ public class ScpDownload extends SshTask {
     }
 
     private void writePayloadToFile(InputStream in, OutputStream out,
-                                    FileOutputStream fos, long fileSize) throws SshException, IOException {
+                                    OutputStream outputStream, long fileSize) throws SshException, IOException {
         byte[] inBuffer = new byte[1024];
         int readSize;
         while (true) {
@@ -118,7 +128,8 @@ public class ScpDownload extends SshTask {
                         + "download payload of file.");
             }
 
-            fos.write(inBuffer, 0, bytesRead);
+            outputStream.write(inBuffer, 0, bytesRead);
+            scpFile.setOutputStream(outputStream);
             fileSize -= bytesRead;
 
             if (fileSize == 0L) break;
