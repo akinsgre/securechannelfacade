@@ -8,6 +8,7 @@ public class ScpFile {
     private String remoteDirectory;
     private String remoteFilename;
     private OutputStream outputStream ;
+    private byte[] byteArray;
     
     public ScpFile(final File localFile, final String remotePath) {
         if (localFile == null || remotePath == null) {
@@ -72,6 +73,19 @@ public class ScpFile {
     }
 
     long getFileSize() {
-        return this.localFile.length();
+    	long result ;
+    	if (this.localFile != null) {
+    		result = this.localFile.length();
+    	}
+    	else {
+    		result = this.getByteArray().length;
+    	}
+    	return result;
     }
+	public byte[] getByteArray() {
+		return byteArray;
+	}
+	public void setByteArray(byte[] byteArray) {
+		this.byteArray = byteArray;
+	}
 }

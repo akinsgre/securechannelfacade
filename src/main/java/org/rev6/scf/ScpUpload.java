@@ -1,6 +1,7 @@
 package org.rev6.scf;
 
 import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +40,12 @@ public class ScpUpload extends SshTask {
                 final String cmd = SCP_UPLOAD_COMMAND + this.scpFile.getRemoteDirectory();
 
                 channel = this.setUpChannel(sshSession, cmd);
-                fis = new FileInputStream(scpFile.getLocalFile());
+                if (scpFile.getLocalFile() != null) {
+                	fis = new FileInputStream(scpFile.getLocalFile());
+                }
+                else {
+                	fis = new ByteArrayInputStream(scpFile.getByteArray());
+                }
                 in = channel.getInputStream();
                 out = channel.getOutputStream();
 
@@ -116,9 +122,13 @@ public class ScpUpload extends SshTask {
 
 
     public String toString() {
+    	String source = "[ByteArray]";
+    	if (this.scpFile != null && this.scpFile.getLocalFile() != null) {
+    		source = this.scpFile.getLocalFile().getAbsolutePath();
+    	}
         if (this.scpFile != null) {
             return this.getClass().getName() + " Task: "
-                    + this.scpFile.getLocalFile().getAbsolutePath() + " to "
+                    + source + " to "
                     + this.scpFile.getRemoteDirectory() + this.scpFile.getRemoteFilename()  +" at a remote host.";
         }
         return this.getClass().getName() + " Task: scpFile property is null.";
