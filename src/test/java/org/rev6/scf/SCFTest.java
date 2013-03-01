@@ -22,6 +22,7 @@ public class SCFTest {
     private static final String PK_FILE_PATH = System.getProperty("scf.keypath");
     private static final String LOCAL_PATH = "src/test/resources/test.txt";
     private static final String REMOTE_PATH = System.getProperty("scf.remotepath");
+    private static final int PORT = Integer.parseInt(System.getProperty("scf.port"));
 
 
     public static void main(String[] args) throws Exception {
@@ -29,11 +30,21 @@ public class SCFTest {
         tryUpload();
         tryDownload();
         tryByteArrayUpload();
+        tryRemoveFile();
+    }
+    public static void tryRemoveFile() throws SshException {
+    	tryUpload(); //send a file to start with
+    	//now let's remove it
+    	SshConnection sshConnection = new SshConnection(
+                HOST, USER, PASSWORD, PORT);
+        sshConnection.connect();
+        SshCommand command = new SshCommand("rm " + REMOTE_PATH + "test_byte.txt");
+        sshConnection.executeTask(command);
     }
     public static void tryByteArrayUpload() throws SshException {
     	byte[] byteArray = "This is a byte array test".getBytes();
     	SshConnection sshConnection = new SshConnection(
-                HOST, USER, PASSWORD);
+                HOST, USER, PASSWORD, PORT);
         sshConnection.connect();
         
         //new Download method which results in an ScpFile which has the OutputStream of the file associated
@@ -45,7 +56,7 @@ public class SCFTest {
     }
     public static void tryDownload() throws SshException {
     	SshConnection sshConnection = new SshConnection(
-                HOST, USER, PASSWORD);
+                HOST, USER, PASSWORD, PORT);
         sshConnection.connect();
         // Original download method which writes the file to local disk
         ScpDownload download = new ScpDownload(
@@ -74,7 +85,7 @@ public class SCFTest {
     }
     public static void tryOutputStreamDownload() throws SshException {
     	SshConnection sshConnection = new SshConnection(
-                HOST, USER, PASSWORD);
+                HOST, USER, PASSWORD, PORT);
         sshConnection.connect();
         // Original download method which writes the file to local disk
 //        ScpDownload download = new ScpDownload(
@@ -98,7 +109,7 @@ public class SCFTest {
     }
     public static void tryUpload() throws SshException {
     	SshConnection sshConnection = new SshConnection(
-                HOST, USER, PASSWORD);
+                HOST, USER, PASSWORD, PORT);
         sshConnection.connect();
         
         //new Download method which results in an ScpFile which has the OutputStream of the file associated

@@ -91,6 +91,20 @@ public class SshConnection {
         this.setUsername(username);
         this.setPassword(password);
     }
+    /**
+     * Initializes an SshConnection to use password based authentication.
+     *
+     * @param host     The remote server to scp the file to
+     * @param username The username on the remote server
+     * @param password password to authenticate the username with
+     * @param port 	   port to connect to ssh server
+     */
+    public SshConnection(String host, String username, String password, int port) {
+    	this(host, username, password);
+    	this.setPort(port);
+
+    }
+
 
     /**
      * Disconnects from the ssh session.
