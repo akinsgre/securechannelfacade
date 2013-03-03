@@ -29,6 +29,7 @@ public class SCFTest {
     	tryOutputStreamDownload();
         tryUpload();
         tryDownload();
+        tryMixedCaseDownload();
         tryByteArrayUpload();
         tryRemoveFile();
     }
@@ -54,13 +55,42 @@ public class SCFTest {
         System.out.println("Nothing was returned from tryByteArrayUpload");
         sshConnection.disconnect();
     }
+    public static void tryMixedCaseDownload() throws SshException {
+    	SshConnection sshConnection = new SshConnection(
+                HOST, USER, PASSWORD, PORT);
+        sshConnection.connect();
+        // Original download method which writes the file to local disk
+        ScpDownload download = new ScpDownload(
+        			new ScpFile(new File("src/test/resources/mixedcasetest.txt"),  REMOTE_PATH + "MixedCaseTest.txt")
+        				);
+        
+        sshConnection.executeTask(download);	
+        FileInputStream input;
+		OutputStream out = new ByteArrayOutputStream();
+		try {
+			input = new FileInputStream(new File(LOCAL_PATH));
+
+	        IOUtils.copy(input, out);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		System.out.println("This was returned from tryDownload \n" +  ((ByteArrayOutputStream)out).toString() );
+        //sshConnection.executeTask(command);
+
+        sshConnection.disconnect();
+    }
     public static void tryDownload() throws SshException {
     	SshConnection sshConnection = new SshConnection(
                 HOST, USER, PASSWORD, PORT);
         sshConnection.connect();
         // Original download method which writes the file to local disk
         ScpDownload download = new ScpDownload(
-        			new ScpFile(new File(LOCAL_PATH),  REMOTE_PATH + "ppr_clm")
+        			new ScpFile(new File(LOCAL_PATH),  REMOTE_PATH + "test.txt")
         				);
         
         sshConnection.executeTask(download);	
@@ -93,7 +123,7 @@ public class SCFTest {
 //        				);
         
         //new Download method which results in an ScpFile which has the OutputStream of the file associated
-        ScpFile scpFile = new ScpOutput(REMOTE_PATH + "ppr_clm");
+        ScpFile scpFile = new ScpOutput(REMOTE_PATH + "test.txt");
         
         ScpDownload outDownload = new ScpDownload(scpFile);
 //        ScpUpload upload = new ScpUpload(new ScpFile(new File(LOCAL_PATH),REMOTE_PATH));

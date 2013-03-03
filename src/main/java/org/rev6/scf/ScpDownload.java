@@ -31,53 +31,82 @@ public class ScpDownload extends SshTask {
 
 
 	@Override
-    void execute(Session sshSession) throws SshException {
-        InputStream in = null;
-        OutputStream out = null;
-        OutputStream outStream = null;
-        ChannelExec channel = null;
-        try {
-            try {
-                long fileSize;
-                String cmd = SCP_DOWNLOAD_COMMAND + this.scpFile.getRemoteFullPath();
+	void execute(Session sshSession) throws SshException {
+		InputStream in = null;
+		OutputStream out = null;
+		OutputStream outStream = null;
+		ChannelExec channel = null;
+		long fileSize = 0L;
+		try {
+			try {
+				boolean foundFile = false;
+				int counter = 0;
+				String path = this.scpFile.getRemoteDirectory()
+						+ this.scpFile.getRemoteFilename();
+				while (!foundFile && counter < 2) {
 
-                channel = setUpChannel(sshSession, cmd);
-                //TODO.. this is where I think the refactoring should come in.. 
-                //  Maybe ScpOutputStream should extend ScpDownload adn this method Overriden accordingly?
-                //  Maybe the following should be encapsulated in the ScpFile, instead of place here?
-                if (scpFile.getLocalFile() == null) {
-                	outStream = new ByteArrayOutputStream();	
-                } else {
-                	outStream = new FileOutputStream(scpFile.getLocalFile());	
-                }
-                
-                in = channel.getInputStream();
-                out = channel.getOutputStream();
+					String cmd = SCP_DOWNLOAD_COMMAND + path;
 
-                channel.connect();
+					channel = setUpChannel(sshSession, cmd);
+					// TODO.. this is where I think the refactoring should come
+					// in..
+					// Maybe ScpOutputStream should extend ScpDownload adn this
+					// method Overriden accordingly?
+					// Maybe the following should be encapsulated in the
+					// ScpFile, instead of place here?
+					if (scpFile.getLocalFile() == null) {
+						outStream = new ByteArrayOutputStream();
+					} else {
+						outStream = new FileOutputStream(scpFile.getLocalFile());
+					}
 
-                sendAck(out);
+					in = channel.getInputStream();
+					out = channel.getOutputStream();
 
-                fileSize = getFileSizeFromStream(in);
-                skipFileName(in);
+					channel.connect();
 
-                sendAck(out);
+					sendAck(out);
 
-                writePayloadToFile(in, out, outStream, fileSize);
-            } finally {
-                if (out != null)
-                    out.close();
-                if (in != null)
-                    in.close();
-                if (outStream != null)
-                    outStream.close();
-                if (channel != null)
-                    channel.disconnect();
-            }
-        } catch (Exception e) {
-            throw new SshException(e);
-        }
-    }
+					try {
+						fileSize = getFileSizeFromStream(in);
+						foundFile = true;
+					} catch (Exception e) {
+
+						e.printStackTrace();
+						path = this.scpFile.getRemoteDirectory()
+								+ this.scpFile.getRemoteFilename()
+										.toLowerCase();
+						counter++;
+						if (out != null)
+							out.close();
+						if (in != null)
+							in.close();
+						if (outStream != null)
+							outStream.close();
+						if (channel != null)
+							channel.disconnect();
+					}
+				}
+				skipFileName(in);
+
+				sendAck(out);
+
+				writePayloadToFile(in, out, outStream, fileSize);
+
+			} finally {
+				if (out != null)
+					out.close();
+				if (in != null)
+					in.close();
+				if (outStream != null)
+					outStream.close();
+				if (channel != null)
+					channel.disconnect();
+			}
+		} catch (Exception e) {
+			throw new SshException(e);
+		}
+	}
 
     private long getFileSizeFromStream(InputStream in)
             throws SshException, IOException {
